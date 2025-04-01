@@ -1,14 +1,11 @@
+from os import makedirs
 from pathlib import Path
 
 from dotenv import load_dotenv
 from loguru import logger
 
-# Load environment variables from .env file if it exists
-load_dotenv()
-
 # Paths
 PROJ_ROOT = Path(__file__).resolve().parents[1]
-logger.info(f"PROJ_ROOT path is: {PROJ_ROOT}")
 
 DATA_DIR = PROJ_ROOT / "data"
 RAW_DATA_DIR = DATA_DIR / "raw"
@@ -20,13 +17,43 @@ MODELS_DIR = PROJ_ROOT / "models"
 
 REPORTS_DIR = PROJ_ROOT / "reports"
 FIGURES_DIR = REPORTS_DIR / "figures"
+LOGS_DIR = REPORTS_DIR / "logs"
 
-# If tqdm is installed, configure loguru with tqdm.write
-# https://github.com/Delgan/loguru/issues/135
+# Check all project directories exist
+project_directories: list[Path] = [
+    DATA_DIR,
+    RAW_DATA_DIR,
+    INTERIM_DATA_DIR,
+    PROCESSED_DATA_DIR,
+    EXTERNAL_DATA_DIR,
+    MODELS_DIR,
+    REPORTS_DIR,
+    FIGURES_DIR,
+    LOGS_DIR,
+]
+for directory in project_directories:
+    makedirs(directory, exist_ok=True)
+
+# Environment variables
+DOT_ENV_FILE = PROJ_ROOT / ".env"
+load_dotenv(DOT_ENV_FILE)
+
+# Logger Configuration
 try:
+    # If tqdm is installed, configure loguru with tqdm.write
+    # https://github.com/Delgan/loguru/issues/135
     from tqdm import tqdm
 
     logger.remove(0)
     logger.add(lambda msg: tqdm.write(msg, end=""), colorize=True)
 except ModuleNotFoundError:
     pass
+
+logger.add(
+    LOGS_DIR / "gtm_feat.log",
+    rotation="1 week",
+    retention="1 month",
+    level="DEBUG",
+)
+
+logger.info("Configuration loaded successfully.")
