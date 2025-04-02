@@ -1,16 +1,14 @@
+from abc import ABC, ABCMeta, abstractmethod
 import concurrent.futures
 import json
 import os
-from abc import ABC
-from abc import ABCMeta, abstractmethod
 from pathlib import Path
-from typing import Callable, List
-from typing import Union, Dict, Any
+from typing import Any, Callable, Dict, List, Union
 
+from codetiming import Timer
 import numpy as np
 import pandas as pd
 import torch
-from codetiming import Timer
 
 from gtm_feat.config import logger
 
@@ -55,13 +53,17 @@ class AcousticFeatConfiguration(ABC):
         elif isinstance(config_object, dict):
             return config_object
         else:
-            logger.error(f"Configuration must be a dict or a valid Path to a JSON file, got {type(config_object)}.")
+            logger.error(
+                f"Configuration must be a dict or a valid Path to a JSON file, got {type(config_object)}."
+            )
             raise TypeError
 
     def _validate_config(self, config: Dict[str, Any]) -> None:
         missing_arguments = [arg for arg in self.mandatory_config_arguments if arg not in config]
         if missing_arguments:
-            logger.error(f"Missing mandatory configuration arguments: {', '.join(missing_arguments)}")
+            logger.error(
+                f"Missing mandatory configuration arguments: {', '.join(missing_arguments)}"
+            )
             raise ValueError
 
     def _apply_config(self, config: Dict[str, Any]) -> None:
@@ -74,6 +76,9 @@ class AcousticFeatConfiguration(ABC):
             if not parameter_value:
                 return subtitution
         except Exception:
+            logger.warning(
+                f"Failed to get parameter *{parameter_name}*. Using default value *{subtitution}* instead"
+            )
             return subtitution
 
         return parameter_value
@@ -81,7 +86,7 @@ class AcousticFeatConfiguration(ABC):
 
 class BaseFeatureExtractor(object, metaclass=ABCMeta):
     def __init__(self, config_object: Union[Path, str]):
-        """ Base Feature Extractor class
+        """Base Feature Extractor class
 
         All feature pre- and post-processors should subclass it.
         All subclass should overwrite:
@@ -89,22 +94,26 @@ class BaseFeatureExtractor(object, metaclass=ABCMeta):
         - Methods:``extract``, used for running the processing functionality.
 
         Args:
-            config (dict[str, Any]): Configuration dictionary with all the parameters of the feat extractor.
+            config_object (Union[Path, str]): Path to a .json file with all the feature parameters.
         """
         super().__init__()
         self.config: AcousticFeatConfiguration = AcousticFeatConfiguration(config_object)
 
     @abstractmethod
     def preprocessor(self, raw_audio_path: Path) -> Union[torch.Tensor, np.ndarray]:
-        """ Abstract method that implement the reading and preprocessing audio pipeline """
+        """Abstract method that implement the reading and preprocessing audio pipeline"""
 
     @abstractmethod
-    def feature_transform(self, pre_audio: Union[torch.Tensor, np.ndarray]) -> Union[torch.Tensor, np.ndarray]:
-        """ Abstract method that implement the algorithm to transform raw audio to acoustic features. """
+    def feature_transform(
+        self, pre_audio: Union[torch.Tensor, np.ndarray]
+    ) -> Union[torch.Tensor, np.ndarray]:
+        """Abstract method that implement the algorithm to transform raw audio to acoustic features."""
 
     @abstractmethod
-    def postprocessor(self, acoustic_feats: Union[torch.Tensor, np.ndarray]) -> Union[torch.Tensor, np.ndarray]:
-        """ Abstract method that implement the postprocessing feat pipeline(calculation of delta, delta-delta, etc.) """
+    def postprocessor(
+        self, acoustic_feats: Union[torch.Tensor, np.ndarray]
+    ) -> Union[torch.Tensor, np.ndarray]:
+        """Abstract method that implement the postprocessing feat pipeline(calculation of delta, delta-delta, etc.)"""
 
     def _extract_single(self, raw_audio_path: Path) -> Union[torch.Tensor, np.ndarray]:
         """
@@ -119,7 +128,9 @@ class BaseFeatureExtractor(object, metaclass=ABCMeta):
             raise RuntimeError
         return post_feats
 
-    def _extract_parallel(self, raw_audios_paths: List[Path], n_jobs: int = None) -> List[Union[torch.Tensor, np.ndarray]]:
+    def _extract_parallel(
+        self, raw_audios_paths: List[Path], n_jobs: int = None
+    ) -> List[Union[torch.Tensor, np.ndarray]]:
         """
         Parallel version for extracting features from multiple audio files concurrently.
         If the length of the list is equal or minor that n_jobs, the extraction will be serial for efficiency reasons.
@@ -168,11 +179,11 @@ class BaseFeatureExtractor(object, metaclass=ABCMeta):
 
 class BaseDownloader(object, metaclass=ABCMeta):
     def __init__(
-            self,
-            file_id: str,
-            path_local: Path,
+        self,
+        file_id: str,
+        path_local: Path,
     ):
-        """ Base class for downloaders.
+        """Base class for downloaders.
 
         All downloaders should subclass it.
         All subclass should overwrite:
@@ -202,10 +213,15 @@ class BaseDownloader(object, metaclass=ABCMeta):
 
 
 class BaseEmbeddingExtractor(BaseFeatureExtractor, ABC):
-    def __init__(self, device: torch.device, config: AcousticFeatConfiguration, downloader: BaseDownloader,
-                 preprocessor: Callable = None,
-                 postprocessor: Callable = None):
-        """ Base Embedding Extractor class
+    def __init__(
+        self,
+        device: torch.device,
+        config: AcousticFeatConfiguration,
+        downloader: BaseDownloader,
+        preprocessor: Callable = None,
+        postprocessor: Callable = None,
+    ):
+        """Base Embedding Extractor class
 
         All embedding feature pre- and post-processors should subclass it.
         All subclass should overwrite:
@@ -227,7 +243,7 @@ class BaseEmbeddingExtractor(BaseFeatureExtractor, ABC):
         self.embedding_model = self.load_model()
 
     def train(self, df_custom_data: pd.DataFrame, train_config: dict[str, Any], path_local: Path):
-        """ Implementation of a custom training of the embedding model using a custom dataset."""
+        """Implementation of a custom training of the embedding model using a custom dataset."""
 
         self.embedding_model.train(df_custom_data, train_config)
         self.embedding_model.save(path_local)
@@ -271,5 +287,7 @@ class BaseEmbeddingExtractor(BaseFeatureExtractor, ABC):
 
         return post_embedding
 
-    def calculate(self, preprocessed_data: Union[torch.Tensor, np.ndarray]) -> Union[torch.Tensor, np.ndarray]:
+    def calculate(
+        self, preprocessed_data: Union[torch.Tensor, np.ndarray]
+    ) -> Union[torch.Tensor, np.ndarray]:
         return self.embedding_model.infer(preprocessed_data)
