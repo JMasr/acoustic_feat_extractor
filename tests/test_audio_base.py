@@ -4,7 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from audio.base import AcousticFeatConfiguration
+from gtm_feat.audio.base import AcousticFeatConfiguration, AcousticEmbeddingConfiguration
+
 
 # AcousticFeatConfiguration Section
 
@@ -26,7 +27,7 @@ def config_invalid_dict():
         "extra_param": True,
     }
 
-def test_should_init_with_valid_dictionary(config_valid_dict):
+def test_should_feat_config_init_with_valid_dictionary(config_valid_dict):
     # Arrange
     config_dict = config_valid_dict
 
@@ -42,7 +43,7 @@ def test_should_init_with_valid_dictionary(config_valid_dict):
     assert config.get("feat_name") == "mfcc"
     assert config.get("", None) is None
 
-def test_should_init_with_valid_json_file(config_valid_dict):
+def test_should_feat_config_init_with_valid_json_file(config_valid_dict):
     # Arrange
     config_dict = config_valid_dict
     config_temp_json = json.dumps(config_dict)
@@ -64,7 +65,7 @@ def test_should_init_with_valid_json_file(config_valid_dict):
     assert config.get("feat_name") == "mfcc"
     assert config.get("", None) is None
 
-def test_should_not_init_with_invalid_dict(config_invalid_dict):
+def test_should_feat_config_not_init_with_invalid_dict(config_invalid_dict):
     # Arrange
     config_dict = config_invalid_dict
 
@@ -72,7 +73,7 @@ def test_should_not_init_with_invalid_dict(config_invalid_dict):
     with pytest.raises(ValueError):
         AcousticFeatConfiguration(config_dict)
 
-def test_should_not_init_with_nonexistent_path():
+def test_should_feat_config_not_init_with_nonexistent_path():
     # Arrange
     nonexistent_path = Path("/path/to/nonexistent/config.json")
 
@@ -81,3 +82,28 @@ def test_should_not_init_with_nonexistent_path():
         AcousticFeatConfiguration(nonexistent_path)
 
 
+# Acoustic Embedding Configuration Section
+
+@pytest.fixture()
+def config_embedding_valid():
+    return {
+        "feat_name": "test_embedding",
+        "feat_type": "embedding",
+        "resampling_rate": 16000,
+        "origin_model": "wav2vec2",
+        "model_local_path": "/path/to/model",
+    }
+
+def test_init_with_valid_dictionary(config_embedding_valid):
+    # Arrange
+    config_dict = config_embedding_valid
+
+    # Act
+    config = AcousticEmbeddingConfiguration(config_dict)
+
+    # Assert
+    assert config.feat_name == "test_embedding"
+    assert config.feat_type == "embedding"
+    assert config.resampling_rate == 16000
+    assert config.origin_model == "wav2vec2"
+    assert config.model_local_path == "/path/to/model"
