@@ -3,9 +3,8 @@ import concurrent.futures
 import json
 import os
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Dict, List, Union
 
-from codetiming import Timer
 import numpy as np
 import pandas as pd
 import torch
@@ -28,9 +27,9 @@ class AcousticFeatConfiguration(ABC):
             config_object (Union[Path, Dict[str, Any]]): A path to a JSON configuration file
                 or a dictionary containing configuration parameters.
         """
-        self.feat_name: str = None
-        self.feat_type: str = None
-        self.resampling_rate: int = None
+        self.feat_name: str
+        self.feat_type: str
+        self.resampling_rate: int
 
         config = self._load_config_object(config_object)
         self._validate_config(config)
@@ -77,15 +76,33 @@ class AcousticFeatConfiguration(ABC):
                 return subtitution
         except Exception:
             logger.warning(
-                f"Failed to get parameter *{parameter_name}*. Using default value *{subtitution}* instead"
+                f"Failed to get parameter *{parameter_name}*. Using default value *{subtitution}*"
             )
             return subtitution
 
         return parameter_value
 
 
+class AcousticEmbeddingConfiguration(AcousticFeatConfiguration):
+    mandatory_config_arguments = [
+        "feat_name",
+        "feat_type",
+        "resampling_rate",
+        "origin_model",
+        "model_local_path",
+    ]
+
+    def __init__(self, config_object: Union[Path, Dict[str, Any]]):
+        # Define the extended class parameters
+        self.origin_model: str
+        self.model_local_path: Path
+
+        # Init the main class
+        super().__init__(config_object)
+
+
 class BaseFeatureExtractor(object, metaclass=ABCMeta):
-    def __init__(self, config_object: Union[Path, str]):
+    def __init__(self, config_object: Union[Path, Dict[str, Any]]):
         """Base Feature Extractor class
 
         All feature pre- and post-processors should subclass it.
@@ -94,7 +111,7 @@ class BaseFeatureExtractor(object, metaclass=ABCMeta):
         - Methods:``extract``, used for running the processing functionality.
 
         Args:
-            config_object (Union[Path, str]): Path to a .json file with all the feature parameters.
+            config_object (Union[Path, Dict[str, Any]]): Path to a .json file or a dictionary with all feat parameters.
         """
         super().__init__()
         self.config: AcousticFeatConfiguration = AcousticFeatConfiguration(config_object)
@@ -180,8 +197,8 @@ class BaseFeatureExtractor(object, metaclass=ABCMeta):
 class BaseDownloader(object, metaclass=ABCMeta):
     def __init__(
         self,
-        file_id: str,
-        path_local: Path,
+        file_id,
+        path_local,
     ):
         """Base class for downloaders.
 
@@ -213,14 +230,7 @@ class BaseDownloader(object, metaclass=ABCMeta):
 
 
 class BaseEmbeddingExtractor(BaseFeatureExtractor, ABC):
-    def __init__(
-        self,
-        device: torch.device,
-        config: AcousticFeatConfiguration,
-        downloader: BaseDownloader,
-        preprocessor: Callable = None,
-        postprocessor: Callable = None,
-    ):
+    def __init__(self, config_object: Union[Path, Dict[str, Any]]):
         """Base Embedding Extractor class
 
         All embedding feature pre- and post-processors should subclass it.
@@ -233,61 +243,30 @@ class BaseEmbeddingExtractor(BaseFeatureExtractor, ABC):
 
 
         Args:
-            device (torch.device): Torch device cpu or cuda.
+            config_object (Union[Path, Dict[str, Any]]): Path to a .json file or a dictionary with all feat parameters.
         """
-        super().__init__(device, config, preprocessor, postprocessor)
-        self.downloader = downloader
-        self.origin_model = self.downloader.file_id
-        self.path_local = self.downloader.path_local
+        super().__init__(config_object)
 
-        self.embedding_model = self.load_model()
+    @abstractmethod
+    def load_model(self):
+        """Loads the embedding models."""
 
+    @abstractmethod
+    def preprocessor(self, raw_audio_path: Path) -> Union[torch.Tensor, np.ndarray]:
+        """Abstract method that implement the reading and preprocessing audio pipeline."""
+
+    @abstractmethod
+    def feature_transform(
+        self, pre_audio: Union[torch.Tensor, np.ndarray]
+    ) -> Union[torch.Tensor, np.ndarray]:
+        """Abstract method that implement the algorithm to transform raw audio to acoustic features."""
+
+    @abstractmethod
+    def postprocessor(
+        self, acoustic_feats: Union[torch.Tensor, np.ndarray]
+    ) -> Union[torch.Tensor, np.ndarray]:
+        """Abstract method that implement the postprocessing feat pipeline(calculation of delta, delta-delta, etc.)"""
+
+    @abstractmethod
     def train(self, df_custom_data: pd.DataFrame, train_config: dict[str, Any], path_local: Path):
         """Implementation of a custom training of the embedding model using a custom dataset."""
-
-        self.embedding_model.train(df_custom_data, train_config)
-        self.embedding_model.save(path_local)
-
-        self.path_local = path_local
-        self.origin_model = path_local.name
-
-    @Timer("BaseModel.load_model", "{name}: {milliseconds:.2f} ms", logger=logger.debug)
-    def load_model(self):
-        """Loads the TorchScript model.
-
-        Returns:
-            Union[torch.jit.ScriptModule, torch.jit.TracedModule]: Loaded TorchScript model.
-        """
-        if not os.path.exists(self.path_local):
-            dir_local = os.path.dirname(self.path_local)
-            os.makedirs(dir_local, exist_ok=True)
-            self.downloader.run()
-        model = self.downloader.load()
-
-        return model
-
-    def extract(self, raw_audio_path: List[Path]) -> Union[torch.Tensor, np.ndarray]:
-        """
-        Extract features from raw audio files by applying pre-processing,
-        calculation, and post-processing steps.
-
-        Args:
-            raw_audio_path (List[Path]): A list of paths to raw audio files.
-
-        Returns:
-            Union[torch.Tensor, np.ndarray]: Extracted features.
-        """
-        df_raw_audios = pd.Series(raw_audio_path)
-        df_preprocessed_data = df_raw_audios.map(self.preprocessor)
-        df_embedding = df_preprocessed_data.map(self.calculate)
-        post_embedding = df_embedding.map(self.postprocessor)
-
-        # Cleaning
-        del df_raw_audios, df_preprocessed_data, df_embedding
-
-        return post_embedding
-
-    def calculate(
-        self, preprocessed_data: Union[torch.Tensor, np.ndarray]
-    ) -> Union[torch.Tensor, np.ndarray]:
-        return self.embedding_model.infer(preprocessed_data)
