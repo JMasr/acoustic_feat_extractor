@@ -15,8 +15,12 @@ opensmile~=2.5.1
 pandas~=2.2.3
 pip
 python-dotenv~=1.1.0
+pytest
 scikit-learn
+soundfile==0.13.1
+spafe==0.3.3
 torch
 torchaudio
 tqdm~=4.67.1
 typer~=0.15.2
+
