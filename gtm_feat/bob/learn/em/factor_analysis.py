@@ -8,8 +8,8 @@ import operator
 
 import dask
 import dask.bag
-import numpy as np
 from dask.delayed import Delayed
+import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.utils import check_consistent_length
 from sklearn.utils.multiclass import unique_labels
@@ -115,16 +115,16 @@ class FactorAnalysisBase(BaseEstimator):
     """
 
     def __init__(
-            self,
-            r_U,
-            r_V=None,
-            relevance_factor=4.0,
-            em_iterations=10,
-            random_state=0,
-            enroll_iterations=1,
-            ubm=None,
-            ubm_kwargs=None,
-            **kwargs,
+        self,
+        r_U,
+        r_V=None,
+        relevance_factor=4.0,
+        em_iterations=10,
+        random_state=0,
+        enroll_iterations=1,
+        ubm=None,
+        ubm_kwargs=None,
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.ubm = ubm
@@ -846,17 +846,17 @@ class FactorAnalysisBase(BaseEstimator):
     #  Estimating V and y  #
 
     def update_y(
-            self,
-            *,
-            X,
-            y,
-            n_classes,
-            VProd,
-            latent_x,
-            latent_y,
-            latent_z,
-            n_acc,
-            f_acc,
+        self,
+        *,
+        X,
+        y,
+        n_classes,
+        VProd,
+        latent_x,
+        latent_y,
+        latent_z,
+        n_acc,
+        f_acc,
     ):
         """
         Computes a new math:`E[y]` See equation (30) in [McCool2013]_
@@ -926,15 +926,15 @@ class FactorAnalysisBase(BaseEstimator):
         return latent_y
 
     def _latent_y_per_class(
-            self,
-            *,
-            X_i,
-            n_acc_i,
-            f_acc_i,
-            VProd,
-            VTinvSigma,
-            latent_x_i,
-            latent_z_i,
+        self,
+        *,
+        X_i,
+        n_acc_i,
+        f_acc_i,
+        VProd,
+        VTinvSigma,
+        latent_x_i,
+        latent_z_i,
     ):
         id_plus_v_prod_i = self._compute_id_plus_vprod_i(n_acc_i, VProd)
         fn_y_i = self._compute_fn_y_i(
@@ -1107,7 +1107,7 @@ class FactorAnalysisBase(BaseEstimator):
         tmp_CD = np.repeat(n_acc_i, self.feature_dimension)
 
         fn_y_i = f_acc_i.flatten() - tmp_CD * (
-                m - D * latent_z_i
+            m - D * latent_z_i
         )  # Fn_yi = sum_{sessions h}(N_{i,h}*(o_{i,h} - m - D*z_{i})
 
         # Looping over the sessions of a ;ane;
@@ -1324,14 +1324,14 @@ class ISVMachine(FactorAnalysisBase):
     """
 
     def __init__(
-            self,
-            r_U,
-            em_iterations=10,
-            relevance_factor=4.0,
-            random_state=0,
-            ubm=None,
-            ubm_kwargs=None,
-            **kwargs,
+        self,
+        r_U,
+        em_iterations=10,
+        relevance_factor=4.0,
+        random_state=0,
+        ubm=None,
+        ubm_kwargs=None,
+        **kwargs,
     ):
         super().__init__(
             r_U=r_U,
@@ -1605,15 +1605,15 @@ class JFAMachine(FactorAnalysisBase):
     """
 
     def __init__(
-            self,
-            r_U,
-            r_V,
-            em_iterations=10,
-            relevance_factor=4.0,
-            random_state=0,
-            ubm=None,
-            ubm_kwargs=None,
-            **kwargs,
+        self,
+        r_U,
+        r_V,
+        em_iterations=10,
+        relevance_factor=4.0,
+        random_state=0,
+        ubm=None,
+        ubm_kwargs=None,
+        **kwargs,
     ):
         super().__init__(
             ubm=ubm,
@@ -1850,11 +1850,11 @@ class JFAMachine(FactorAnalysisBase):
         return self.update_U(acc_U_A1, acc_U_A2)
 
     def finalize_u(
-            self,
-            X,
-            y,
-            n_samples_per_class,
-            latent_y,
+        self,
+        X,
+        y,
+        n_samples_per_class,
+        latent_y,
     ):
         """
         Compute for the last time `E[x]`

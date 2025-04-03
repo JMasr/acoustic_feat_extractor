@@ -3,12 +3,12 @@
 from importlib.metadata import entry_points
 from pathlib import Path
 
-import clapper.logging
-import click
-import xdg
 from clapper.click import AliasedGroup, user_defaults_group
+import clapper.logging
 from clapper.rc import UserDefaults
+import click
 from click_plugins import with_plugins
+import xdg
 
 logger = clapper.logging.setup("bob")
 

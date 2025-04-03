@@ -6,9 +6,9 @@ from typing import Union
 import dask
 import dask.array as da
 import dask.delayed
+from dask_ml.cluster.k_means import k_init
 import numpy as np
 import scipy.spatial.distance
-from dask_ml.cluster.k_means import k_init
 from sklearn.base import BaseEstimator
 
 from gtm_feat.bob.learn.em.utils import (
@@ -162,7 +162,7 @@ def reduce_indices_means_vars(stats):
     weights_count = np.bincount(closest_centroid_indices, minlength=n_clusters)
     weights = weights_count / weights_count.sum()
     means = means_sum / weights_count[:, None]
-    variances = (variances_sum / weights_count[:, None]) - (means ** 2)
+    variances = (variances_sum / weights_count[:, None]) - (means**2)
 
     return variances, weights
 
@@ -188,15 +188,15 @@ class KMeansMachine(BaseEstimator):
     """
 
     def __init__(
-            self,
-            n_clusters: int,
-            init_method: Union[str, np.ndarray] = "k-means||",
-            convergence_threshold: float = 1e-5,
-            max_iter: int = 20,
-            random_state: Union[int, np.random.RandomState] = 0,
-            init_max_iter: Union[int, None] = 5,
-            oversampling_factor: float = 2,
-            **kwargs,
+        self,
+        n_clusters: int,
+        init_method: Union[str, np.ndarray] = "k-means||",
+        convergence_threshold: float = 1e-5,
+        max_iter: int = 20,
+        random_state: Union[int, np.random.RandomState] = 0,
+        init_max_iter: Union[int, None] = 5,
+        oversampling_factor: float = 2,
+        **kwargs,
     ) -> None:
         """
         Parameters
@@ -246,9 +246,7 @@ class KMeansMachine(BaseEstimator):
         if self.centroids_ is not None and obj.centroids_ is not None:
             return np.allclose(self.centroids_, obj.centroids_, rtol=r_epsilon, atol=a_epsilon)
         else:
-            logger.warning(
-                "KMeansMachine `centroids_` was not set. You should call 'fit' first."
-            )
+            logger.warning("KMeansMachine `centroids_` was not set. You should call 'fit' first.")
             return False
 
     def get_variances_and_weights_for_each_cluster(self, data: np.ndarray):
@@ -327,9 +325,7 @@ class KMeansMachine(BaseEstimator):
         step = 0
         while self.max_iter is None or step < self.max_iter:
             step += 1
-            logger.info(
-                f"Iteration {step:3d}" + (f"/{self.max_iter:3d}" if self.max_iter else "")
-            )
+            logger.info(f"Iteration {step:3d}" + (f"/{self.max_iter:3d}" if self.max_iter else ""))
             distance_previous = distance
 
             # compute the e-m steps
@@ -354,8 +350,8 @@ class KMeansMachine(BaseEstimator):
 
                 # Terminates if converged (and threshold is set)
                 if (
-                        self.convergence_threshold is not None
-                        and convergence_value <= self.convergence_threshold
+                    self.convergence_threshold is not None
+                    and convergence_value <= self.convergence_threshold
                 ):
                     logger.info("Reached convergence threshold. Training stopped.")
                     break

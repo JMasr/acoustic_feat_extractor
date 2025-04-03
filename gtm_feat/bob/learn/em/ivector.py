@@ -4,15 +4,15 @@
 
 import copy
 import operator
-import pickle
 from pathlib import Path
+import pickle
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import dask
 import dask.bag
 import numpy as np
-import tqdm
 from sklearn.base import BaseEstimator
+import tqdm
 
 from gtm_feat.bob.learn.em.gmm import GMMMachine, GMMStats
 from gtm_feat.config import MODELS_PRETRAINED_DIR, logger
@@ -105,7 +105,7 @@ def compute_id_tt_sigma_inv_t(stats: GMMStats, T: np.ndarray, sigma: np.ndarray)
 
 
 def compute_tt_sigma_inv_fnorm(
-        ubm_means: np.ndarray, stats: GMMStats, T: np.ndarray, sigma: np.ndarray
+    ubm_means: np.ndarray, stats: GMMStats, T: np.ndarray, sigma: np.ndarray
 ) -> np.ndarray:
     """Computes \f$(Id + \\sum_{c=1}^{C} N_{i,j,c} T^{T} \\Sigma_{c}^{-1} T)\f$
 
@@ -147,9 +147,9 @@ def e_step(machine: "IVectorMachine", data: List[GMMStats]) -> IVectorStats:
         # Compute normalized statistics
         Fnorm = Fij - Nij[:, None] * machine.ubm.means
         Snorm = (
-                Sij
-                - (2 * Fij * machine.ubm.means)
-                + (Nij[:, None] * machine.ubm.means * machine.ubm.means)
+            Sij
+            - (2 * Fij * machine.ubm.means)
+            + (Nij[:, None] * machine.ubm.means * machine.ubm.means)
         )
 
         # Do the accumulation for each component
@@ -157,7 +157,7 @@ def e_step(machine: "IVectorMachine", data: List[GMMStats]) -> IVectorStats:
 
         # (c,t,t) += (c,) * (t,t)
         stats.nij_sigma_wij2 = stats.nij_sigma_wij2 + (
-                Nij[:, None, None] * sigma_w_ij2[None, :, :]
+            Nij[:, None, None] * sigma_w_ij2[None, :, :]
         )  # (c,t,t)
         stats.nij = stats.nij + Nij
         stats.fnorm_sigma_wij = stats.fnorm_sigma_wij + np.matmul(
@@ -208,15 +208,15 @@ class IVectorMachine(BaseEstimator):
     """
 
     def __init__(
-            self,
-            ubm: GMMMachine,
-            dim_t: int = 2,
-            convergence_threshold: Optional[float] = None,
-            max_iterations: int = 25,
-            update_sigma: bool = True,
-            variance_floor: float = 1e-10,
-            output_folder: Optional[Path] = None,
-            **kwargs,
+        self,
+        ubm: GMMMachine,
+        dim_t: int = 2,
+        convergence_threshold: Optional[float] = None,
+        max_iterations: int = 25,
+        update_sigma: bool = True,
+        variance_floor: float = 1e-10,
+        output_folder: Optional[Path] = None,
+        **kwargs,
     ) -> None:
         """Initializes the IVectorMachine object.
 

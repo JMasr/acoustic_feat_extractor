@@ -12,10 +12,10 @@ from typing import Union
 
 import dask
 import dask.array as da
-import numpy as np
-import tqdm
 from h5py import File as HDF5File
+import numpy as np
 from sklearn.base import BaseEstimator
+import tqdm
 
 from gtm_feat.bob.learn.em.kmeans import KMeansMachine
 from gtm_feat.bob.learn.em.utils import (
@@ -146,8 +146,8 @@ def e_step(data, machine):
 
 
 def m_step(
-        statistics,
-        machine,
+    statistics,
+    machine,
 ):
     """Maximization step of the e-m algorithm."""
     m_step_func = map_gmm_m_step if machine.trainer == "map" else ml_gmm_m_step
@@ -311,21 +311,21 @@ class GMMStats:
 
     def __eq__(self, other):
         return (
-                self.log_likelihood == other.log_likelihood
-                and self.t == other.t
-                and np.array_equal(self.n, other.n)
-                and np.array_equal(self.sum_px, other.sum_px)
-                and np.array_equal(self.sum_pxx, other.sum_pxx)
+            self.log_likelihood == other.log_likelihood
+            and self.t == other.t
+            and np.array_equal(self.n, other.n)
+            and np.array_equal(self.sum_px, other.sum_px)
+            and np.array_equal(self.sum_pxx, other.sum_pxx)
         )
 
     def is_similar_to(self, other, rtol=1e-5, atol=1e-8):
         """Returns True if `other` has the same values (within a tolerance)."""
         return (
-                np.isclose(self.log_likelihood, other.log_likelihood, rtol=rtol, atol=atol)
-                and np.isclose(self.t, other.t, rtol=rtol, atol=atol)
-                and np.allclose(self.n, other.n, rtol=rtol, atol=atol)
-                and np.allclose(self.sum_px, other.sum_px, rtol=rtol, atol=atol)
-                and np.allclose(self.sum_pxx, other.sum_pxx, rtol=rtol, atol=atol)
+            np.isclose(self.log_likelihood, other.log_likelihood, rtol=rtol, atol=atol)
+            and np.isclose(self.t, other.t, rtol=rtol, atol=atol)
+            and np.allclose(self.n, other.n, rtol=rtol, atol=atol)
+            and np.allclose(self.sum_px, other.sum_px, rtol=rtol, atol=atol)
+            and np.allclose(self.sum_pxx, other.sum_pxx, rtol=rtol, atol=atol)
         )
 
     def resize(self, n_gaussians, n_features):
@@ -388,23 +388,23 @@ class GMMMachine(BaseEstimator):
     """
 
     def __init__(
-            self,
-            n_gaussians: int,
-            trainer: str = "ml",
-            ubm: "Union[GMMMachine, None]" = None,
-            convergence_threshold: float = 1e-5,
-            max_fitting_steps: Union[int, None] = 200,
-            random_state: Union[int, np.random.RandomState] = 0,
-            weights: "Union[np.ndarray[('n_gaussians',), float], None]" = None,  # noqa: F821
-            k_means_trainer: Union[KMeansMachine, None] = None,
-            update_means: bool = True,
-            update_variances: bool = False,
-            update_weights: bool = False,
-            mean_var_update_threshold: float = EPSILON,
-            map_alpha: float = 0.5,
-            map_relevance_factor: Union[None, float] = 4,
-            output_folder: Union[str, None] = None,
-            **kwargs,
+        self,
+        n_gaussians: int,
+        trainer: str = "ml",
+        ubm: "Union[GMMMachine, None]" = None,
+        convergence_threshold: float = 1e-5,
+        max_fitting_steps: Union[int, None] = 200,
+        random_state: Union[int, np.random.RandomState] = 0,
+        weights: "Union[np.ndarray[('n_gaussians',), float], None]" = None,  # noqa: F821
+        k_means_trainer: Union[KMeansMachine, None] = None,
+        update_means: bool = True,
+        update_variances: bool = False,
+        update_weights: bool = False,
+        mean_var_update_threshold: float = EPSILON,
+        map_alpha: float = 0.5,
+        map_relevance_factor: Union[None, float] = 4,
+        output_folder: Union[str, None] = None,
+        **kwargs,
     ):
         """
         Parameters
@@ -508,8 +508,8 @@ class GMMMachine(BaseEstimator):
 
     @means.setter
     def means(
-            self,
-            means: "np.ndarray[('n_gaussians', 'n_features'), float]",  # noqa: F821
+        self,
+        means: "np.ndarray[('n_gaussians', 'n_features'), float]",  # noqa: F821
     ):  # noqa: F821
         self._means = means
 
@@ -522,8 +522,8 @@ class GMMMachine(BaseEstimator):
 
     @variances.setter
     def variances(
-            self,
-            variances: "np.ndarray[('n_gaussians', 'n_features'), float]",  # noqa: F821
+        self,
+        variances: "np.ndarray[('n_gaussians', 'n_features'), float]",  # noqa: F821
     ):
         self._variances = np.maximum(self.variance_thresholds, variances)
         # Recompute g_norm for each gaussian [array of shape (n_gaussians,)]
@@ -539,8 +539,8 @@ class GMMMachine(BaseEstimator):
 
     @variance_thresholds.setter
     def variance_thresholds(
-            self,
-            threshold: "Union[float, np.ndarray[('n_gaussians', 'n_features'), float]]",  # noqa: F821
+        self,
+        threshold: "Union[float, np.ndarray[('n_gaussians', 'n_features'), float]]",  # noqa: F821
     ):
         self._variance_thresholds = threshold
         if self._variances is not None:
@@ -645,29 +645,29 @@ class GMMMachine(BaseEstimator):
             return False
 
         return (
-                np.allclose(self.means, other.means)
-                and np.allclose(self.variances, other.variances)
-                and np.allclose(self.variance_thresholds, other.variance_thresholds)
-                and np.allclose(self.weights, other.weights)
+            np.allclose(self.means, other.means)
+            and np.allclose(self.variances, other.variances)
+            and np.allclose(self.variance_thresholds, other.variance_thresholds)
+            and np.allclose(self.weights, other.weights)
         )
 
     def is_similar_to(self, other, rtol=1e-5, atol=1e-8):
         """Returns True if `other` has the same gaussians (within a tolerance)."""
         return (
-                np.allclose(self.means, other.means, rtol=rtol, atol=atol)
-                and np.allclose(self.variances, other.variances, rtol=rtol, atol=atol)
-                and np.allclose(
-            self.variance_thresholds,
-            other.variance_thresholds,
-            rtol=rtol,
-            atol=atol,
-        )
-                and np.allclose(self.weights, other.weights, rtol=rtol, atol=atol)
+            np.allclose(self.means, other.means, rtol=rtol, atol=atol)
+            and np.allclose(self.variances, other.variances, rtol=rtol, atol=atol)
+            and np.allclose(
+                self.variance_thresholds,
+                other.variance_thresholds,
+                rtol=rtol,
+                atol=atol,
+            )
+            and np.allclose(self.weights, other.weights, rtol=rtol, atol=atol)
         )
 
     def initialize_gaussians(
-            self,
-            data: "Union[np.ndarray[('n_samples', 'n_features'), float], None]" = None,  # noqa: F821
+        self,
+        data: "Union[np.ndarray[('n_samples', 'n_features'), float], None]" = None,  # noqa: F821
     ):
         """Populates gaussians parameters with either k-means or the UBM values."""
         if self.trainer == "map":
@@ -696,8 +696,8 @@ class GMMMachine(BaseEstimator):
             logger.debug("Done.")
 
     def log_weighted_likelihood(
-            self,
-            data: "np.ndarray[('n_samples', 'n_features'), float]",  # noqa: F821
+        self,
+        data: "np.ndarray[('n_samples', 'n_features'), float]",  # noqa: F821
     ):
         """Returns the weighted log likelihood for each Gaussian for a set of data.
 
@@ -717,8 +717,8 @@ class GMMMachine(BaseEstimator):
         )
 
     def log_likelihood(
-            self,
-            data: "np.ndarray[('n_samples', 'n_features'), float]",  # noqa: F821
+        self,
+        data: "np.ndarray[('n_samples', 'n_features'), float]",  # noqa: F821
     ):
         """Returns the current log likelihood for a set of data in this Machine.
 
@@ -797,8 +797,8 @@ class GMMMachine(BaseEstimator):
 
                 # Terminates if converged (and likelihood computation is set)
                 if (
-                        self.convergence_threshold is not None
-                        and convergence_value <= self.convergence_threshold
+                    self.convergence_threshold is not None
+                    and convergence_value <= self.convergence_threshold
                 ):
                     logger.info("Reached convergence threshold. Training stopped.")
                     break
@@ -827,13 +827,13 @@ class GMMMachine(BaseEstimator):
 
 
 def ml_gmm_m_step(
-        machine: GMMMachine,
-        statistics: GMMStats,
-        update_means=True,
-        update_variances=False,
-        update_weights=False,
-        mean_var_update_threshold=EPSILON,
-        **kwargs,
+    machine: GMMMachine,
+    statistics: GMMStats,
+    update_means=True,
+    update_variances=False,
+    update_weights=False,
+    mean_var_update_threshold=EPSILON,
+    **kwargs,
 ):
     """Updates a gmm machine parameter according to the e-step statistics."""
     logger.info("ML GMM Trainer m-step")
@@ -869,15 +869,15 @@ def ml_gmm_m_step(
 
 
 def map_gmm_m_step(
-        machine: GMMMachine,
-        statistics: GMMStats,
-        update_means=True,
-        update_variances=False,
-        update_weights=False,
-        reynolds_adaptation=True,
-        relevance_factor=4,
-        alpha=0.5,
-        mean_var_update_threshold=EPSILON,
+    machine: GMMMachine,
+    statistics: GMMStats,
+    update_means=True,
+    update_variances=False,
+    update_weights=False,
+    reynolds_adaptation=True,
+    relevance_factor=4,
+    alpha=0.5,
+    mean_var_update_threshold=EPSILON,
 ):
     """Updates a GMMMachine parameters using statistics adapted from a UBM."""
     if machine.ubm is None:
@@ -938,9 +938,9 @@ def map_gmm_m_step(
             machine.means, 2
         )
         new_variances = (
-                alpha[:, None] * statistics.sum_pxx / statistics.n[:, None]
-                + (1 - alpha[:, None]) * (machine.ubm.variances + machine.ubm.means)
-                - np.power(machine.means, 2)
+            alpha[:, None] * statistics.sum_pxx / statistics.n[:, None]
+            + (1 - alpha[:, None]) * (machine.ubm.variances + machine.ubm.means)
+            - np.power(machine.means, 2)
         )
         machine.variances = np.where(
             statistics.n[:, None] < mean_var_update_threshold,

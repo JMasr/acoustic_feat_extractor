@@ -17,12 +17,12 @@ EPSILON = np.finfo(float).eps
 
 
 def linear_scoring(
-        models_means: "Union[list[GMMMachine], np.ndarray[('n_models', 'n_gaussians', 'n_features'), float]]",
-        # noqa: F821
-        ubm: GMMMachine,
-        test_stats: Union["list[GMMStats]", GMMStats],
-        test_channel_offsets: "np.ndarray[('n_test_stats', 'n_gaussians'), float]" = 0,  # noqa: F821
-        frame_length_normalization: bool = False,
+    models_means: "Union[list[GMMMachine], np.ndarray[('n_models', 'n_gaussians', 'n_features'), float]]",
+    # noqa: F821
+    ubm: GMMMachine,
+    test_stats: Union["list[GMMStats]", GMMStats],
+    test_channel_offsets: "np.ndarray[('n_test_stats', 'n_gaussians'), float]" = 0,  # noqa: F821
+    frame_length_normalization: bool = False,
 ) -> "np.ndarray[('n_models', 'n_test_stats'), float]":  # noqa: F821
     """Estimation of the LLR between a target model and the UBM for a test instance.
 
