@@ -84,6 +84,8 @@ class AcousticFeatConfiguration(ABC):
 
 
 class AcousticEmbeddingConfiguration(AcousticFeatConfiguration):
+    origin_model: str
+    model_local_path: Path
     mandatory_config_arguments = [
         "feat_name",
         "feat_type",
@@ -93,10 +95,6 @@ class AcousticEmbeddingConfiguration(AcousticFeatConfiguration):
     ]
 
     def __init__(self, config_object: Union[Path, Dict[str, Any]]):
-        # Define the extended class parameters
-        self.origin_model: str
-        self.model_local_path: Path
-
         # Init the main class
         super().__init__(config_object)
 
@@ -187,6 +185,9 @@ class BaseFeatureExtractor(object, metaclass=ABCMeta):
             results = self._extract_parallel(raw_audio_path)
         elif isinstance(raw_audio_path, Path):
             results = self._extract_single(raw_audio_path)
+        elif isinstance(raw_audio_path, str):
+            raw_audio_path = Path(raw_audio_path)
+            results = self._extract_single(raw_audio_path)
         else:
             logger.error(f"Raw audio path {raw_audio_path} must be a Path or a list of Paths.")
             raise ValueError
@@ -248,8 +249,12 @@ class BaseEmbeddingExtractor(BaseFeatureExtractor, ABC):
         super().__init__(config_object)
 
     @abstractmethod
-    def load_model(self):
-        """Loads the embedding models."""
+    def load_model(self) -> bool:
+        """Loads the embedding model."""
+
+    @abstractmethod
+    def save_model(self):
+        """Save the embedding model."""
 
     @abstractmethod
     def preprocessor(self, raw_audio_path: Path) -> Union[torch.Tensor, np.ndarray]:
@@ -268,5 +273,5 @@ class BaseEmbeddingExtractor(BaseFeatureExtractor, ABC):
         """Abstract method that implement the postprocessing feat pipeline(calculation of delta, delta-delta, etc.)"""
 
     @abstractmethod
-    def train(self, df_custom_data: pd.DataFrame, train_config: dict[str, Any], path_local: Path):
+    def train(self, df_custom_data: pd.DataFrame):
         """Implementation of a custom training of the embedding model using a custom dataset."""
