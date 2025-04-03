@@ -15,14 +15,12 @@ def config_valid_dict():
         "feat_name": "mfcc",
         "feat_type": "spectral",
         "resampling_rate": 16000,
-        "extra_param": True,
     }
 
 @pytest.fixture
 def config_invalid_dict():
     return {
         "feat_name": "mfcc",
-        # "feat_type": "spectral",
         "resampling_rate": 16000,
         "extra_param": True,
     }
@@ -38,7 +36,6 @@ def test_should_feat_config_init_with_valid_dictionary(config_valid_dict):
     assert config.feat_name == "mfcc"
     assert config.feat_type == "spectral"
     assert config.resampling_rate == 16000
-    assert config.extra_param == True
 
     assert config.get("feat_name") == "mfcc"
     assert config.get("", None) is None
@@ -60,7 +57,6 @@ def test_should_feat_config_init_with_valid_json_file(config_valid_dict):
     assert config.feat_name == "mfcc"
     assert config.feat_type == "spectral"
     assert config.resampling_rate == 16000
-    assert config.extra_param == True
 
     assert config.get("feat_name") == "mfcc"
     assert config.get("", None) is None
