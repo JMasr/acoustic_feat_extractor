@@ -231,6 +231,8 @@ class BaseDownloader(object, metaclass=ABCMeta):
 
 
 class BaseEmbeddingExtractor(BaseFeatureExtractor, ABC):
+    config: AcousticEmbeddingConfiguration
+
     def __init__(self, config_object: Union[Path, Dict[str, Any]]):
         """Base Embedding Extractor class
 

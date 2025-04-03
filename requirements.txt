@@ -26,6 +26,7 @@ scikit-learn~=1.6.1
 scipy~=1.15.2
 soundfile==0.13.1
 spafe==0.3.3
+speechbrain==1.0.2
 torch~=2.6.0+cu126
 torchaudio~=2.6.0+cu126
 tqdm~=4.67.1

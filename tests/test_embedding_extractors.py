@@ -7,29 +7,8 @@ import pandas as pd
 import pytest
 import soundfile as sf
 
-from gtm_feat.audio.embedding import IvectorExtractor
+from gtm_feat.audio.embedding import IVectorExtractor, XVectorExtractor
 from gtm_feat.config import TEST_DIR
-
-
-@pytest.fixture
-def config_ivector_valid_dict():
-    return {
-        "feat_name": "i-vector",
-        "feat_type": "i-vector",
-        "origin_model": TEST_DIR / "pretrained_models" / "i_vector-custom",
-        "model_local_path": TEST_DIR / "pretrained_models" / "i_vector-custom",
-        "tag": "custom_test",
-        "resampling_rate": 16000,
-        "n_mfcc": 20,
-        "n_fft": 512,
-        "hop_length": 256,
-        "n_mels": 40,
-        "knn_max_iter": 2,
-        "ubm_gaussians": 2,
-        "ubm_max_fitting_steps": 2,
-        "ivector_dim": 2,
-        "ivector_epochs": 2,
-    }
 
 
 @pytest.fixture
@@ -58,12 +37,33 @@ def dummy_df_train():
 
 
 # I-Vector Section
+@pytest.fixture
+def config_ivector_valid_dict():
+    return {
+        "feat_name": "i-vector",
+        "feat_type": "i-vector",
+        "origin_model": TEST_DIR / "pretrained_models" / "i_vector-custom",
+        "model_local_path": TEST_DIR / "pretrained_models" / "i_vector-custom",
+        "tag": "custom_test",
+        "resampling_rate": 16000,
+        "n_mfcc": 20,
+        "n_fft": 512,
+        "hop_length": 256,
+        "n_mels": 40,
+        "knn_max_iter": 2,
+        "ubm_gaussians": 2,
+        "ubm_max_fitting_steps": 2,
+        "ivector_dim": 2,
+        "ivector_epochs": 2,
+    }
+
+
 def test_should_init_ivector_with_valid_config(config_ivector_valid_dict):
     # Arrange
     config = config_ivector_valid_dict
 
     # Act
-    extractor = IvectorExtractor(config)
+    extractor = IVectorExtractor(config)
 
     # Assert
     assert extractor.config.__dict__ == config_ivector_valid_dict
@@ -71,7 +71,7 @@ def test_should_init_ivector_with_valid_config(config_ivector_valid_dict):
 
 def test_should_train_ivector_with_valid_dataset(config_ivector_valid_dict, dummy_df_train):
     # Arrange
-    extractor = IvectorExtractor(config_ivector_valid_dict)
+    extractor = IVectorExtractor(config_ivector_valid_dict)
 
     # Act
     extractor.train(dummy_df_train)
@@ -85,7 +85,7 @@ def test_should_train_ivector_with_valid_dataset(config_ivector_valid_dict, dumm
 
 def test_should_extract_ivector_with_valid_dataset(config_ivector_valid_dict, dummy_df_train):
     # Arrange
-    ivector_extractor = IvectorExtractor(config_ivector_valid_dict)
+    ivector_extractor = IVectorExtractor(config_ivector_valid_dict)
 
     # Act
     ivector_extractor.train(dummy_df_train)
@@ -100,3 +100,44 @@ def test_should_extract_ivector_with_valid_dataset(config_ivector_valid_dict, du
     assert len(ivector_list) == len(list(dummy_df_train.path))
     # Clean
     shutil.rmtree(config_ivector_valid_dict.get("model_local_path").parent)
+
+
+# x-Vector Section
+@pytest.fixture
+def config_xvector_valid_dict():
+    return {
+        "feat_name": "x-vector",
+        "feat_type": "x-vector",
+        "origin_model": "speechbrain/spkrec-xvect-voxceleb",
+        "model_local_path": TEST_DIR / "pretrained_models" / "x_vector-custom",
+        "resampling_rate": 16000,
+        "xvector_dim": 512,
+    }
+
+
+def test_should_init_xvector_with_valid_config(config_xvector_valid_dict):
+    # Arrange
+    config = config_xvector_valid_dict
+
+    # Act
+    xvector_extractor = XVectorExtractor(config)
+
+    # Assert
+    assert xvector_extractor.config.__dict__ == config_xvector_valid_dict
+
+
+def test_should_extract_xvector_with_valid_dataset(config_xvector_valid_dict, dummy_df_train):
+    # Arrange
+    xvector_extractor = XVectorExtractor(config_xvector_valid_dict)
+
+    # Act
+    x_vector = xvector_extractor.extract(dummy_df_train.path.iloc[0])
+    x_vector_list = xvector_extractor.extract(list(dummy_df_train.path))
+
+    # Assert
+    assert len(x_vector) == config_xvector_valid_dict["xvector_dim"]
+    assert x_vector.sum(axis=0)[0] != 0
+
+    assert len(x_vector_list) == len(list(dummy_df_train.path))
+    # Clean
+    shutil.rmtree(config_xvector_valid_dict.get("model_local_path").parent)
