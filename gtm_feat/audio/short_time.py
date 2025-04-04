@@ -111,6 +111,7 @@ class OpenSmileExtractor(BaseFeatureExtractor):
             logger.error(f"Error processing audio file: {e}")
             raise RuntimeError
 
+        acoustic_feats.reset_index(drop=True, inplace=True)
         return acoustic_feats
 
     def subset_selector(self, acoustic_feats: pd.DataFrame):
