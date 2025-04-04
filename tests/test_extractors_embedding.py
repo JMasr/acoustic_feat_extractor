@@ -101,6 +101,20 @@ def test_should_extract_ivector_with_valid_dataset(config_ivector_valid_dict, du
     # Clean
     shutil.rmtree(config_ivector_valid_dict.get("model_local_path").parent)
 
+def test_should_extract_ivector_windowed_with_valid_audio(config_ivector_valid_dict, dummy_df_train):
+    # Arrange
+    ivector_extractor = IVectorExtractor(config_ivector_valid_dict)
+    ivector_extractor.train(dummy_df_train)
+
+    # Act
+    ivector = ivector_extractor.extract_windowed(dummy_df_train.path.iloc[0])
+
+    # Assert
+    assert isinstance(ivector, list)
+
+    # Clean
+    shutil.rmtree(config_ivector_valid_dict.get("model_local_path").parent)
+
 
 # x-Vector Section
 @pytest.fixture
@@ -139,5 +153,17 @@ def test_should_extract_xvector_with_valid_dataset(config_xvector_valid_dict, du
     assert x_vector.sum(axis=0)[0] != 0
 
     assert len(x_vector_list) == len(list(dummy_df_train.path))
+    # Clean
+    shutil.rmtree(config_xvector_valid_dict.get("model_local_path").parent)
+
+def test_should_extract_xvector_windowed_with_valid_audio(config_xvector_valid_dict, dummy_df_train):
+    # Arrange
+    xvector_extractor = XVectorExtractor(config_xvector_valid_dict)
+
+    # Act
+    xvector = xvector_extractor.extract_windowed(dummy_df_train.path.iloc[0], window_length_ms= 40)
+
+    # Assert
+    assert isinstance(xvector, list)
     # Clean
     shutil.rmtree(config_xvector_valid_dict.get("model_local_path").parent)
