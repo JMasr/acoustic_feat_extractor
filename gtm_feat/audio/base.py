@@ -179,11 +179,53 @@ class BaseFeatureExtractor(object, metaclass=ABCMeta):
 
         return results
 
-    def extract(self, raw_audio_path: Union[Path, List[Path]]):
+    def extract_windowed(self, raw_audio_path: Path, window_length_ms: float = 20):
         """
-        Method to extract acoustic feat for
+        Extracts features from audio files in a windowed manner.
+        """
+        def is_audio_length_grater_than_window(raw_audio: Union[torch.Tensor, np.ndarray], window_length: int):
+            if isinstance(pre_audio, torch.Tensor):
+                raw_audio = raw_audio.squeeze()
 
-        """
+            if raw_audio.shape[0] < window_length:
+                logger.error(
+                    f"Audio {raw_audio_path} is shorter than the window length of {window_length_ms} ms. "
+                    f"Audio length: {pre_audio.shape[0]} samples, Window length: {window_length_samples} samples."
+                )
+                return False
+            else:
+                return True
+
+
+        pre_audio = self.preprocessor(raw_audio_path)
+
+        # Calculate the number of samples in the window
+        window_length_samples = int((window_length_ms / 1000) * self.config.resampling_rate)
+        if is_audio_length_grater_than_window(pre_audio, window_length_samples):
+            post_feats_windowed = []
+
+            try:
+                # Calculate the feats for each window
+                for i in range(0, pre_audio.shape[0], window_length_samples):
+                    window = pre_audio[i : i + window_length_samples]
+
+                    acoustic_feats = self.feature_transform(window)
+                    post_feats = self.postprocessor(acoustic_feats)
+                    post_feats_windowed.append(post_feats)
+
+                    if window.shape[0] < window_length_samples:
+                        break
+
+            except Exception as e:
+                logger.error(f"Failed to extract features from {raw_audio_path}. ERROR: {e}")
+                raise RuntimeError
+        else:
+            raise ValueError
+
+        return post_feats_windowed
+
+
+    def extract(self, raw_audio_path: Union[Path, List[Path]]):
         if isinstance(raw_audio_path, list):
             results = self._extract_parallel(raw_audio_path)
         elif isinstance(raw_audio_path, Path):
