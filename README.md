@@ -4,7 +4,17 @@
     <img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
 </a>
 
-A Python implementation of aan acoustic feature extractor for the GTM Lab at Universidade de Vigo
+<a target="_blank" href="https://pytorch.org/">
+    <img src="https://img.shields.io/badge/PyTorch-black?logo=PyTorch" />
+</a>
+
+
+## General Considerations
+
+This project is designed to be a comprehensive acoustic feature extractor with a focus on flexibility and modularity.
+Support for various feature extraction methods, including **short-term features** and **embeddings**, is provided.
+
+The two data types supported for features are **torch.Tensor** and **numpy.ndarray**.
 
 ## Project Organization
 
