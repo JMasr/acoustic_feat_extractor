@@ -82,6 +82,9 @@ class AcousticFeatConfiguration(ABC):
 
         return parameter_value
 
+    def to_dict(self):
+        return self.__dict__
+
 
 class AcousticEmbeddingConfiguration(AcousticFeatConfiguration):
     origin_model: str
