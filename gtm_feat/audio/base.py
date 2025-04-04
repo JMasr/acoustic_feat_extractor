@@ -13,6 +13,9 @@ from gtm_feat.config import logger
 
 
 class AcousticFeatConfiguration(ABC):
+    feat_name: str
+    feat_type: str
+    resampling_rate: int
     mandatory_config_arguments = ["feat_name", "feat_type", "resampling_rate"]
 
     def __init__(self, config_object: Union[Path, Dict[str, Any]]):
@@ -27,9 +30,6 @@ class AcousticFeatConfiguration(ABC):
             config_object (Union[Path, Dict[str, Any]]): A path to a JSON configuration file
                 or a dictionary containing configuration parameters.
         """
-        self.feat_name: str
-        self.feat_type: str
-        self.resampling_rate: int
 
         config = self._load_config_object(config_object)
         self._validate_config(config)
